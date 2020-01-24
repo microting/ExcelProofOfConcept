@@ -1,0 +1,62 @@
+﻿{
+  "version": "1.0.0",
+  "restore": {
+    "projectUniqueName": "/home/microting/Documents/workspace/microting/ExcelReadManipPOC/ExcelReadManipPOC/ExcelReadManipPOC.csproj",
+    "projectName": "ExcelReadManipPOC",
+    "projectPath": "/home/microting/Documents/workspace/microting/ExcelReadManipPOC/ExcelReadManipPOC/ExcelReadManipPOC.csproj",
+    "outputPath": "/home/microting/Documents/workspace/microting/ExcelReadManipPOC/ExcelReadManipPOC/obj/",
+    "projectStyle": "PackageReference",
+    "fallbackFolders": [
+      "/usr/share/dotnet/sdk/NuGetFallbackFolder"
+    ],
+    "originalTargetFrameworks": [
+      "netcoreapp2.2"
+    ],
+    "sources": {
+      "https://api.nuget.org/v3/index.json": {}
+    },
+    "frameworks": {
+      "netcoreapp2.2": {
+        "projectReferences": {
+          "/home/microting/Documents/workspace/microting/eform-sdk-dotnet/eFormCore/Microting.eForm.csproj": {
+            "projectPath": "/home/microting/Documents/workspace/microting/eform-sdk-dotnet/eFormCore/Microting.eForm.csproj"
+          }
+        }
+      }
+    },
+    "warningProperties": {
+      "warnAsError": [
+        "NU1605"
+      ]
+    }
+  },
+  "frameworks": {
+    "netcoreapp2.2": {
+      "dependencies": {
+        "DocumentFormat.OpenXml": {
+          "target": "Package",
+          "version": "[2.10.0, )"
+        },
+        "EPPlus": {
+          "target": "Package",
+          "version": "[4.5.3.2, )"
+        },
+        "Microsoft.NETCore.App": {
+          "suppressParent": "All",
+          "target": "Package",
+          "version": "[2.2.0, )",
+          "autoReferenced": true
+        },
+        "Microting.eFormApi.BasePn": {
+          "target": "Package",
+          "version": "[1.2.30, )"
+        }
+      },
+      "imports": [
+        "net461"
+      ],
+      "assetTargetFallback": true,
+      "warn": true
+    }
+  }
+}

@@ -1,0 +1,15 @@
+/home/microting/Documents/workspace/microting/ExcelReadManipPOC/ExcelReadManipPOC/bin/Debug/netcoreapp2.2/ExcelReadManipPOC.deps.json
+/home/microting/Documents/workspace/microting/ExcelReadManipPOC/ExcelReadManipPOC/bin/Debug/netcoreapp2.2/ExcelReadManipPOC.dll
+/home/microting/Documents/workspace/microting/ExcelReadManipPOC/ExcelReadManipPOC/bin/Debug/netcoreapp2.2/ExcelReadManipPOC.pdb
+/home/microting/Documents/workspace/microting/ExcelReadManipPOC/ExcelReadManipPOC/obj/Debug/netcoreapp2.2/ExcelReadManipPOC.csprojAssemblyReference.cache
+/home/microting/Documents/workspace/microting/ExcelReadManipPOC/ExcelReadManipPOC/obj/Debug/netcoreapp2.2/ExcelReadManipPOC.csproj.CoreCompileInputs.cache
+/home/microting/Documents/workspace/microting/ExcelReadManipPOC/ExcelReadManipPOC/obj/Debug/netcoreapp2.2/ExcelReadManipPOC.AssemblyInfoInputs.cache
+/home/microting/Documents/workspace/microting/ExcelReadManipPOC/ExcelReadManipPOC/obj/Debug/netcoreapp2.2/ExcelReadManipPOC.AssemblyInfo.cs
+/home/microting/Documents/workspace/microting/ExcelReadManipPOC/ExcelReadManipPOC/obj/Debug/netcoreapp2.2/ExcelReadManipPOC.dll
+/home/microting/Documents/workspace/microting/ExcelReadManipPOC/ExcelReadManipPOC/obj/Debug/netcoreapp2.2/ExcelReadManipPOC.pdb
+/home/microting/Documents/workspace/microting/ExcelReadManipPOC/ExcelReadManipPOC/bin/Debug/netcoreapp2.2/ExcelReadManipPOC.runtimeconfig.json
+/home/microting/Documents/workspace/microting/ExcelReadManipPOC/ExcelReadManipPOC/bin/Debug/netcoreapp2.2/ExcelReadManipPOC.runtimeconfig.dev.json
+/home/microting/Documents/workspace/microting/ExcelReadManipPOC/ExcelReadManipPOC/bin/Debug/netcoreapp2.2/Microting.eForm.dll
+/home/microting/Documents/workspace/microting/ExcelReadManipPOC/ExcelReadManipPOC/bin/Debug/netcoreapp2.2/Microting.eForm.pdb
+/home/microting/Documents/workspace/microting/ExcelReadManipPOC/ExcelReadManipPOC/bin/Debug/netcoreapp2.2/Microting.eForm.dll.config
+/home/microting/Documents/workspace/microting/ExcelReadManipPOC/ExcelReadManipPOC/obj/Debug/netcoreapp2.2/ExcelReadManipPOC.csproj.CopyComplete

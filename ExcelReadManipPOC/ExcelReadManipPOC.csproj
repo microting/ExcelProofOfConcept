@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>netcoreapp2.2</TargetFramework>
+        <OutputType>Exe</OutputType>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <PackageReference Include="DocumentFormat.OpenXml" Version="2.10.0" />
+      <PackageReference Include="EPPlus" Version="4.5.3.2" />
+      <PackageReference Include="Microting.eFormApi.BasePn" Version="1.2.30" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\..\eform-sdk-dotnet\eFormCore\Microting.eForm.csproj" />
+    </ItemGroup>
+
+</Project>
