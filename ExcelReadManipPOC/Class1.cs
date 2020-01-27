@@ -237,7 +237,7 @@ namespace ExcelReadManipPOC
                     // List<units> localUnits = new List<units>();
                     foreach (var row in rows1)
                     {
-                        if (i > 0)
+                        if (i > 0 && i < 553)
                         {
                             var cells1 = row.Elements<Cell>();
 
@@ -557,19 +557,200 @@ namespace ExcelReadManipPOC
                             }
                         }
                         Console.WriteLine($"ROW {i}");
-
                         i++;
-
                     }
-                    
-                    
-                    
-                    // Console.WriteLine("Row count = {0}", rows.First());
-                    // Console.WriteLine("Cell count = {0}", cells.LongCount());
-                    // Console.WriteLine("Column count = {0}", columns.LongCount());
                 }
-                
             }
+            // Q1
+            int q1Id = 1;
+            int q2Id = 2;
+            int q3Id = 3;
+            int q4Id = 4;
+            int q5Id = 5;
+            int q6Id = 6;
+            int q7Id = 7;
+            int q8Id = 8;
+            int q9Id = 9;
+            int q10Id = 10;
+            int q11Id = 11;
+            int q12Id = 12;
+            int q13Id = 13;
+            int optionJaId = 1;
+            int optionNejId = 2;
+            int option100q2Id = 3;
+            int option75q2Id = 4;
+            int option50q2Id = 5;
+            int option25q2Id = 6;
+            int option0q2Id = 7;
+            int option999q2Id = 8;
+            int option100q3Id = 9;
+            int option75q3Id = 10;
+            int option50q3Id = 11;
+            int option25q3Id = 12;
+            int option0q3Id = 13;
+            int option999q3Id = 14;
+            int option100q4Id = 15;
+            int option75q4Id = 16;
+            int option50q4Id = 17;
+            int option25q4Id = 18;
+            int option0q4Id = 19;
+            int option999q4Id = 20;
+            int option100q5Id = 21;
+            int option75q5Id = 22;
+            int option50q5Id = 23;
+            int option25q5Id = 24;
+            int option0q5Id = 25;
+            int option999q5Id = 26;
+            int option100q6Id = 27;
+            int option75q6Id = 28;
+            int option50q6Id = 29;
+            int option25q6Id = 30;
+            int option0q6Id = 31;
+            int option999q6Id = 32;
+            int option100q7Id = 33;
+            int option75q7Id = 34;
+            int option50q7Id = 35;
+            int option25q7Id = 36;
+            int option0q7Id = 37;
+            int option999q7Id = 38;
+            int option100q8Id = 39;
+            int option75q8Id = 40;
+            int option50q8Id = 41;
+            int option25q8Id = 42;
+            int option0q8Id = 43;
+            int option999q8Id = 44;
+            int option100q9Id = 45;
+            int option75q9Id = 46;
+            int option50q9Id = 47;
+            int option25q9Id = 48;
+            int option0q9Id = 49;
+            int option999q9Id = 50;
+            int option100q10Id = 51;
+            int option75q10Id = 52;
+            int option50q10Id = 53;
+            int option25q10Id = 54;
+            int option0q10Id = 55;
+            int option999q10Id = 56;
+            int option100q11Id = 57;
+            int option75q11Id = 58;
+            int option50q11Id = 59;
+            int option25q11Id = 60;
+            int option0q11Id = 61;
+            int option999q11Id = 62;
+            int option100q12Id = 63;
+            int option75q12Id = 64;
+            int option50q12Id = 65;
+            int option25q12Id = 66;
+            int option0q12Id = 67;
+            int option999q12Id = 68;
+            int optionq13_1Id = 69;
+            int optionq13_2Id = 70;
+            int optionq13_3Id = 71;
+            int optionq13_4Id = 72;
+            int optionq13_5Id = 73;
+            Debug.Assert(dbContext.answer_values.Count(x => x.OptionId == optionJaId) == 419);
+            Debug.Assert(dbContext.answer_values.Count(x => x.OptionId == optionNejId) == 133);
+            Debug.Assert(dbContext.answer_values.Count(x => x.QuestionId == q1Id) == 552);
+            
+            Debug.Assert(dbContext.answer_values.Count(x => x.OptionId == option0q2Id) == 5);
+            Debug.Assert(dbContext.answer_values.Count(x => x.OptionId == option25q2Id) == 7);
+            Debug.Assert(dbContext.answer_values.Count(x => x.OptionId == option50q2Id) == 14);
+            Debug.Assert(dbContext.answer_values.Count(x => x.OptionId == option75q2Id) == 112);
+            Debug.Assert(dbContext.answer_values.Count(x => x.OptionId == option100q2Id) == 275);
+            Debug.Assert(dbContext.answer_values.Count(x => x.OptionId == option999q2Id) == 6);
+            Debug.Assert(dbContext.answer_values.Count(x => x.QuestionId == q2Id) == 419);
+            
+            Debug.Assert(dbContext.answer_values.Count(x => x.OptionId == option0q3Id) == 15);
+            Debug.Assert(dbContext.answer_values.Count(x => x.OptionId == option25q3Id) == 8);
+            Debug.Assert(dbContext.answer_values.Count(x => x.OptionId == option50q3Id) == 44);
+            Debug.Assert(dbContext.answer_values.Count(x => x.OptionId == option75q3Id) == 144);
+            Debug.Assert(dbContext.answer_values.Count(x => x.OptionId == option100q3Id) == 201);
+            Debug.Assert(dbContext.answer_values.Count(x => x.OptionId == option999q3Id) == 7);
+            Debug.Assert(dbContext.answer_values.Count(x => x.QuestionId == q3Id) == 419);
+            
+            Debug.Assert(dbContext.answer_values.Count(x => x.OptionId == option0q4Id) == 13);
+            Debug.Assert(dbContext.answer_values.Count(x => x.OptionId == option25q4Id) == 17);
+            Debug.Assert(dbContext.answer_values.Count(x => x.OptionId == option50q4Id) == 78);
+            Debug.Assert(dbContext.answer_values.Count(x => x.OptionId == option75q4Id) == 123);
+            Debug.Assert(dbContext.answer_values.Count(x => x.OptionId == option100q4Id) == 176);
+            Debug.Assert(dbContext.answer_values.Count(x => x.OptionId == option999q4Id) == 12);
+            Debug.Assert(dbContext.answer_values.Count(x => x.QuestionId == q4Id) == 419);
+            
+            Debug.Assert(dbContext.answer_values.Count(x => x.OptionId == option0q5Id) == 16);
+            Debug.Assert(dbContext.answer_values.Count(x => x.OptionId == option25q5Id) == 18);
+            Debug.Assert(dbContext.answer_values.Count(x => x.OptionId == option50q5Id) == 49);
+            Debug.Assert(dbContext.answer_values.Count(x => x.OptionId == option75q5Id) == 135);
+            Debug.Assert(dbContext.answer_values.Count(x => x.OptionId == option100q5Id) == 188);
+            Debug.Assert(dbContext.answer_values.Count(x => x.OptionId == option999q5Id) == 13);
+            Debug.Assert(dbContext.answer_values.Count(x => x.QuestionId == q5Id) == 419);
+            
+            Debug.Assert(dbContext.answer_values.Count(x => x.OptionId == option0q6Id) == 21);
+            Debug.Assert(dbContext.answer_values.Count(x => x.OptionId == option25q6Id) == 23);
+            Debug.Assert(dbContext.answer_values.Count(x => x.OptionId == option50q6Id) == 61);
+            Debug.Assert(dbContext.answer_values.Count(x => x.OptionId == option75q6Id) == 131);
+            Debug.Assert(dbContext.answer_values.Count(x => x.OptionId == option100q6Id) == 160);
+            Debug.Assert(dbContext.answer_values.Count(x => x.OptionId == option999q6Id) == 23);
+            Debug.Assert(dbContext.answer_values.Count(x => x.QuestionId == q6Id) == 419);
+            
+            Debug.Assert(dbContext.answer_values.Count(x => x.OptionId == option0q7Id) == 13);
+            Debug.Assert(dbContext.answer_values.Count(x => x.OptionId == option25q7Id) == 8);
+            Debug.Assert(dbContext.answer_values.Count(x => x.OptionId == option50q7Id) == 57);
+            Debug.Assert(dbContext.answer_values.Count(x => x.OptionId == option75q7Id) == 116);
+            Debug.Assert(dbContext.answer_values.Count(x => x.OptionId == option100q7Id) == 216);
+            Debug.Assert(dbContext.answer_values.Count(x => x.OptionId == option999q7Id) == 9);
+            Debug.Assert(dbContext.answer_values.Count(x => x.QuestionId == q7Id) == 419);
+            
+            Debug.Assert(dbContext.answer_values.Count(x => x.OptionId == option0q8Id) == 35);
+            Debug.Assert(dbContext.answer_values.Count(x => x.OptionId == option25q8Id) == 27);
+            Debug.Assert(dbContext.answer_values.Count(x => x.OptionId == option50q8Id) == 98);
+            Debug.Assert(dbContext.answer_values.Count(x => x.OptionId == option75q8Id) == 108);
+            Debug.Assert(dbContext.answer_values.Count(x => x.OptionId == option100q8Id) == 124);
+            Debug.Assert(dbContext.answer_values.Count(x => x.OptionId == option999q8Id) == 27);
+            Debug.Assert(dbContext.answer_values.Count(x => x.QuestionId == q8Id) == 419);
+            
+            Debug.Assert(dbContext.answer_values.Count(x => x.OptionId == option0q9Id) == 19);
+            Debug.Assert(dbContext.answer_values.Count(x => x.OptionId == option25q9Id) == 23);
+            Debug.Assert(dbContext.answer_values.Count(x => x.OptionId == option50q9Id) == 51);
+            Debug.Assert(dbContext.answer_values.Count(x => x.OptionId == option75q9Id) == 107);
+            Debug.Assert(dbContext.answer_values.Count(x => x.OptionId == option100q9Id) == 213);
+            Debug.Assert(dbContext.answer_values.Count(x => x.OptionId == option999q9Id) == 6);
+            Debug.Assert(dbContext.answer_values.Count(x => x.QuestionId == q9Id) == 419);
+            
+            Debug.Assert(dbContext.answer_values.Count(x => x.OptionId == option0q10Id) == 16);
+            Debug.Assert(dbContext.answer_values.Count(x => x.OptionId == option25q10Id) == 10);
+            Debug.Assert(dbContext.answer_values.Count(x => x.OptionId == option50q10Id) == 66);
+            Debug.Assert(dbContext.answer_values.Count(x => x.OptionId == option75q10Id) == 116);
+            Debug.Assert(dbContext.answer_values.Count(x => x.OptionId == option100q10Id) == 186);
+            Debug.Assert(dbContext.answer_values.Count(x => x.OptionId == option999q10Id) == 25);
+            Debug.Assert(dbContext.answer_values.Count(x => x.QuestionId == q10Id) == 419);
+            
+            Debug.Assert(dbContext.answer_values.Count(x => x.OptionId == option0q11Id) == 11);
+            Debug.Assert(dbContext.answer_values.Count(x => x.OptionId == option25q11Id) == 8);
+            Debug.Assert(dbContext.answer_values.Count(x => x.OptionId == option50q11Id) == 41);
+            Debug.Assert(dbContext.answer_values.Count(x => x.OptionId == option75q11Id) == 111);
+            Debug.Assert(dbContext.answer_values.Count(x => x.OptionId == option100q11Id) == 211);
+            Debug.Assert(dbContext.answer_values.Count(x => x.OptionId == option999q11Id) == 37);
+            Debug.Assert(dbContext.answer_values.Count(x => x.QuestionId == q11Id) == 419);
+            
+            Debug.Assert(dbContext.answer_values.Count(x => x.OptionId == option0q12Id) == 12);
+            Debug.Assert(dbContext.answer_values.Count(x => x.OptionId == option25q12Id) == 9);
+            Debug.Assert(dbContext.answer_values.Count(x => x.OptionId == option50q12Id) == 58);
+            Debug.Assert(dbContext.answer_values.Count(x => x.OptionId == option75q12Id) == 126);
+            Debug.Assert(dbContext.answer_values.Count(x => x.OptionId == option100q12Id) == 187);
+            Debug.Assert(dbContext.answer_values.Count(x => x.OptionId == option999q12Id) == 27);
+            Debug.Assert(dbContext.answer_values.Count(x => x.QuestionId == q12Id) == 419);
+            
+            Debug.Assert(dbContext.answer_values.Count(x => x.OptionId == optionq13_1Id) == 289);
+            Debug.Assert(dbContext.answer_values.Count(x => x.QuestionId == q13Id) == 1383);
+            Debug.Assert(dbContext.answer_values.Count(x => x.OptionId == optionq13_2Id) == 273);
+            Debug.Assert(dbContext.answer_values.Count(x => x.QuestionId == q13Id) == 1383);
+            Debug.Assert(dbContext.answer_values.Count(x => x.OptionId == optionq13_3Id) == 281);
+            Debug.Assert(dbContext.answer_values.Count(x => x.QuestionId == q13Id) == 1383);
+            Debug.Assert(dbContext.answer_values.Count(x => x.OptionId == optionq13_4Id) == 271);
+            Debug.Assert(dbContext.answer_values.Count(x => x.QuestionId == q13Id) == 1383);
+            Debug.Assert(dbContext.answer_values.Count(x => x.OptionId == optionq13_5Id) == 269);
+            Debug.Assert(dbContext.answer_values.Count(x => x.QuestionId == q13Id) == 1383);
+            Console.WriteLine("we are done");
         }
         private static WorksheetPart GetWorksheetFromSheetName(WorkbookPart workbookPart, string sheetName)
         {     
