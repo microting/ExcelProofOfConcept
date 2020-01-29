@@ -61,7 +61,7 @@ namespace ExcelReadManipPOC
             languages language = new languages
             {
                 Description = "Description",
-                Name = "da-DK"
+                Name = "Danish"
             };
             if (dbContext.languages.Count(x => x.Name == "da-DK") != 1)
             {
@@ -194,7 +194,7 @@ namespace ExcelReadManipPOC
                 await dbContext.survey_configurations.FirstOrDefaultAsync(x => x.Name == surveyConfiguration.Name);
             
             // dbContext.question_sets questionSets = new question_sets();
-
+            Random rnd = new Random();
             var document = @"/home/microting/Documents/workspace/microting/ExcelReadManipPOC/Test-data.xlsx";
             using (FileStream fs = new FileStream(document, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
             {
@@ -276,7 +276,8 @@ namespace ExcelReadManipPOC
                                 {
                                     sites site = new sites()
                                     {
-                                        Name = location
+                                        Name = location,
+                                        MicrotingUid = rnd.Next(1, 999999)
                                     };
                                     await site.Create(dbContext);
                                     KeyValuePair<string, sites> pair = new KeyValuePair<string, sites>(location, site);
