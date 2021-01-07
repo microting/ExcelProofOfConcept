@@ -8,8 +8,8 @@
     <ItemGroup>
       <PackageReference Include="DocumentFormat.OpenXml" Version="2.10.0" />
       <PackageReference Include="EPPlus" Version="5.5.0" />
-      <PackageReference Include="Microting.eForm" Version="4.1.17" />
-      <PackageReference Include="Microting.eFormApi.BasePn" Version="1.2.37" />
+      <PackageReference Include="Microting.eForm" Version="3.1.45" />
+      <PackageReference Include="Microting.eFormApi.BasePn" Version="2.0.67" />
     </ItemGroup>
 
 </Project>
