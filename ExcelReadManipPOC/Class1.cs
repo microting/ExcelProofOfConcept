@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using System.IO;
+using DocumentFormat.OpenXml.Office2010.Excel;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Spreadsheet;
 using eFormCore;
@@ -45,10 +46,10 @@ namespace ExcelReadManipPOC
 
             Language language = new Language
             {
-                LanguageCode = "Description",
+                LanguageCode = "da",
                 Name = "Danish"
             };
-            if (dbContext.Languages.Count(x => x.Name == "da-DK") != 1)
+            if (dbContext.Languages.Count(x => x.Name == "Danish") != 1)
             {
                 await language.Create(dbContext);
             }
@@ -57,14 +58,14 @@ namespace ExcelReadManipPOC
 
             QuestionSet dbQuestionSets = await dbContext.QuestionSets.FirstOrDefaultAsync(x => x.Name == questionSets.Name);
 
-            string[] questionNames = new[] {"Q1", "Q2", "Q3", "Q4", "Q5", "Q6", "Q7", "Q8", "Q9", "Q10", "Q11", "Q12", "Q13"};
+            string[] questionNames = new[] {"Q1", "Q2", "Q3", "Q4", "Q5", "Q6", "Q7", "Q8", "Q9", "Q10", "Q11: Er personalet opmærksomt på at involvere dine pårørende/venner (hvis du ønsker det)?", "Q12: Hvor tilfreds er du alt i alt tilfreds med dit forløb, fra du blev indlagt til du blev udskrevet?", "Q13: ...", "Enter you opinion about the question","Enter you postalcode", "Q16"};
             //                                13    14    15    16    17    18    19    20    21    22    23    24
             List<KeyValuePair<int, Question>> questionIds = new List<KeyValuePair<int, Question>>();
 
             int qi = 13;
             foreach (var questionName in questionNames)
             {
-                if (questionName != "Q13" && questionName != "Q1")
+                if (questionName != "Q13: ..." && questionName != "Q1" && questionName != "Q16")
                 {
                     var questionTranslation =
                         dbContext.QuestionTranslations.SingleOrDefault(x => x.Name == questionName);
@@ -91,6 +92,19 @@ namespace ExcelReadManipPOC
                     }
                     else
                     {
+                        List<Option> options = await dbContext.Options
+                            .Where(x => x.QuestionId == questionTranslation.QuestionId).ToListAsync();
+                        foreach (Option option in options)
+                        {
+                            List<OptionTranslation> optionTranslations = await dbContext.OptionTranslations
+                                .Where(x => x.OptionId == option.Id).ToListAsync();
+                            option.OptionTranslationses = optionTranslations;
+                        }
+
+                        Question question =
+                            await dbContext.Questions.SingleAsync(x => x.Id == questionTranslation.QuestionId);
+                        questionTranslation.Question = question;
+                        questionTranslation.Question.Options = options;
                         KeyValuePair<int, Question> kvp = new KeyValuePair<int, Question>(qi, questionTranslation.Question);
                         questionIds.Add(kvp);
                     }
@@ -105,7 +119,7 @@ namespace ExcelReadManipPOC
                         Question question = new Question()
                         {
                             QuestionSetId = dbQuestionSets.Id,
-                            QuestionType = questionName == "Q1" ? Constants.QuestionTypes.List : Constants.QuestionTypes.Multi
+                            QuestionType = (questionName == "Q1" || questionName == "Q16") ? Constants.QuestionTypes.List : Constants.QuestionTypes.Multi
                         };
                         await question.Create(dbContext);
 
@@ -118,23 +132,34 @@ namespace ExcelReadManipPOC
                         await questionTranslation.Create(dbContext);
 
                         string[] questionOptions;
-                        if (questionName == "Q1")
+                        switch (questionName)
                         {
-                            questionOptions = new[] {"Ja", "Nej"};
-                        }
-                        else
-                        {
-                            questionOptions = new[] {"1", "2", "3", "4", "5"};
+                            case "Q1":
+                                questionOptions = new[] {"Ja", "Nej"};
+                                break;
+                            case "Q16":
+                                questionOptions = new[] {"Love it", "Like much", "Like", "Neutral", "Does not like", "Does not like at all", "Hate"};
+                                break;
+                            default:
+                            {
+                                questionOptions = new[] {"1", "2", "3", "4", "5"};
+                                break;
+                            }
                         }
 
+                        int j = 1;
 
                         foreach (string questionOption in questionOptions)
                         {
+                            if (questionName == "Q16")
+                            {
+                                j += 10;
+                            }
                             Option option = new Option()
                             {
                                 QuestionId = question.Id,
-                                Weight = 1,
-                                WeightValue = 1
+                                Weight = j,
+                                WeightValue = j
                             };
                             await option.Create(dbContext);
 
@@ -153,6 +178,19 @@ namespace ExcelReadManipPOC
                     }
                     else
                     {
+                        List<Option> options = await dbContext.Options
+                            .Where(x => x.QuestionId == questionTranslation.QuestionId).ToListAsync();
+                        foreach (Option option in options)
+                        {
+                            List<OptionTranslation> optionTranslations = await dbContext.OptionTranslations
+                                .Where(x => x.OptionId == option.Id).ToListAsync();
+                            option.OptionTranslationses = optionTranslations;
+                        }
+
+                        Question question =
+                            await dbContext.Questions.SingleAsync(x => x.Id == questionTranslation.QuestionId);
+                        questionTranslation.Question = question;
+                        questionTranslation.Question.Options = options;
                         KeyValuePair<int, Question> kvp = new KeyValuePair<int, Question>(qi, questionTranslation.Question);
                         questionIds.Add(kvp);
                     }
@@ -180,7 +218,7 @@ namespace ExcelReadManipPOC
 
             // dbContext.question_sets questionSets = new question_sets();
             Random rnd = new Random();
-            var document = @"/home/microting/Documents/workspace/microting/ExcelReadManipPOC/Test-data.xlsx";
+            var document = @"/home/rene/Documents/workspace/microting/ExcelProofOfConcept/Test-data.xlsx";
             using (FileStream fs = new FileStream(document, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
             {
                 using (SpreadsheetDocument doc = SpreadsheetDocument.Open(fs, false))
@@ -215,7 +253,7 @@ namespace ExcelReadManipPOC
                         .FirstOrDefault();
                     List<KeyValuePair<string, Site>> localSites = new List<KeyValuePair<string, Site>>();
                     List<KeyValuePair<string, Unit>> localUnits = new List<KeyValuePair<string, Unit>>();
-                    var languageId = dbContext.Languages.SingleOrDefault(x => x.Name == "da-DK");
+                    //var languageId = dbContext.Languages.SingleOrDefault(x => x.Name == "da-DK");
                     // List<sites> localSites = new List<sites>();
                     // List<units> localUnits = new List<units>();
                     foreach (var row in rows1)
@@ -330,6 +368,10 @@ namespace ExcelReadManipPOC
                                         if (cellNumber > 25)
                                         {
                                             questionLookupId = 25;
+                                            if (cellNumber > 29)
+                                            {
+                                                questionLookupId = 28;
+                                            }
                                         }
 
                                         int? lookupOptionId = null;
@@ -350,12 +392,48 @@ namespace ExcelReadManipPOC
                                                     text = stringTable.SharedStringTable.ElementAt(
                                                         int.Parse(cell.CellValue.Text)).InnerText;
 
-                                                    var r = option.OptionTranslationses.SingleOrDefault(x =>
-                                                        x.Name == text);
-                                                    if (r != null)
+                                                    var optionTranslation = await dbContext.OptionTranslations.SingleOrDefaultAsync(x =>
+                                                        x.OptionId == option.Id && x.Name == text);
+                                                    if (optionTranslation != null)
                                                     {
-                                                        lookupOptionId = r.OptionId;
+                                                        lookupOptionId = optionTranslation.OptionId;
                                                     }
+                                                }
+                                            }
+                                            else
+                                            {
+                                                switch (cellNumber)
+                                                {
+                                                    case 25:
+                                                        lookupOptionId = questionIds
+                                                            .First(x => x.Key == questionLookupId).Value.Options
+                                                            .ToList()[0].Id;
+                                                        break;
+                                                    case 26:
+                                                        lookupOptionId = questionIds
+                                                            .First(x => x.Key == questionLookupId).Value.Options
+                                                            .ToList()[1].Id;
+                                                        break;
+                                                    case 27:
+                                                        lookupOptionId = questionIds
+                                                            .First(x => x.Key == questionLookupId).Value.Options
+                                                            .ToList()[2].Id;
+                                                        break;
+                                                    case 28:
+                                                        lookupOptionId = questionIds
+                                                            .First(x => x.Key == questionLookupId).Value.Options
+                                                            .ToList()[3].Id;
+                                                        break;
+                                                    case 29:
+                                                        lookupOptionId = questionIds
+                                                            .First(x => x.Key == questionLookupId).Value.Options
+                                                            .ToList()[4].Id;
+                                                        break;
+                                                    case 30:
+                                                        lookupOptionId = questionIds
+                                                            .First(x => x.Key == questionLookupId).Value.Options
+                                                            .SingleOrDefault(x => x.WeightValue == int.Parse(cell.CellValue.Text)).Id;
+                                                        break;
                                                 }
                                             }
                                         }
@@ -399,6 +477,11 @@ namespace ExcelReadManipPOC
                                                             .First(x => x.Key == questionLookupId).Value.Options
                                                             .ToList()[4].Id;
                                                         break;
+                                                    case 30:
+                                                        lookupOptionId = questionIds
+                                                            .First(x => x.Key == questionLookupId).Value.Options
+                                                            .SingleOrDefault(x => x.WeightValue == int.Parse(cell.CellValue.Text)).Id;
+                                                        break;
                                                 }
                                             }
                                         }
@@ -424,20 +507,22 @@ namespace ExcelReadManipPOC
                                         AnswerValue answerValue = null;
                                         if (lookupOptionId != null)
                                         {
+                                            var bla = questionIds.First(y
+                                                => y.Key == questionLookupId).Value.Id;
                                             answerValue = dbContext.AnswerValues
                                                 .SingleOrDefault(x
                                                     => x.AnswerId == answer.Id
-                                                       && x.QuestionId == questionIds.First(y
-                                                           => y.Key == questionLookupId).Value.Id
+                                                       && x.QuestionId == bla
                                                        && x.OptionId == lookupOptionId);
                                         }
                                         else
                                         {
+                                            var bla = questionIds.First(y
+                                                => y.Key == questionLookupId).Value.Id;
                                             answerValue = dbContext.AnswerValues
                                                 .SingleOrDefault(x
                                                     => x.AnswerId == answer.Id
-                                                       && x.QuestionId == questionIds.First(y
-                                                           => y.Key == questionLookupId).Value.Id);
+                                                       && x.QuestionId == bla);
                                         }
 
                                         if (answerValue == null)
@@ -461,20 +546,29 @@ namespace ExcelReadManipPOC
                                                         foreach (Option option in questionIds
                                                             .First(x => x.Key == questionLookupId).Value.Options)
                                                         {
-                                                            var r =  option.OptionTranslationses.SingleOrDefault(x => x.Name == text);
-                                                            if (r != null)
+                                                            var optionTranslation =
+                                                                await dbContext.OptionTranslations.SingleOrDefaultAsync(
+                                                                    x => x.OptionId == option.Id && x.Name.Equals(text));
+                                                            if (optionTranslation != null)
                                                             {
-                                                                optionId = r.OptionId;
+                                                                optionId = option.Id;
                                                             }
                                                         }
-                                                        answerValue.Value = text;
-                                                        answerValue.OptionId = optionId;
-                                                        answerValue.QuestionId = questionIds
-                                                            .First(x => x.Key == questionLookupId).Value.Id;
-                                                        await answerValue.Create(dbContext);
+
+                                                        if (optionId != 0)
+                                                        {
+                                                            answerValue.Value = text;
+                                                            answerValue.OptionId = optionId;
+                                                            answerValue.QuestionId = questionIds
+                                                                .First(x => x.Key == questionLookupId).Value.Id;
+                                                            await answerValue.Create(dbContext);
+                                                        }
+                                                        else
+                                                        {
+                                                            Console.WriteLine("bla");
+                                                        }
                                                     }
                                                 }
-
                                             }
                                             else
                                             {
