@@ -2,101 +2,86 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Security.Claims;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using Microsoft.EntityFrameworkCore;
-using Microting.eFormApi.BasePn.Abstractions;
-using Microting.eFormApi.BasePn.Infrastructure.Models.API;
-using Microting.eFormApi.BasePn.Infrastructure.Helpers.PluginDbOptions;
-using System.Reflection;
 using System.IO;
-using Castle.Core.Internal;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Spreadsheet;
 using eFormCore;
-using Microsoft.EntityFrameworkCore.Internal;
+using Microsoft.EntityFrameworkCore;
 using S = DocumentFormat.OpenXml.Spreadsheet.Sheets;
 using E = DocumentFormat.OpenXml.OpenXmlElement;
 using A = DocumentFormat.OpenXml.OpenXmlAttribute;
-using Microting.eForm.Dto;
 using Microting.eForm.Infrastructure;
 using Microting.eForm.Infrastructure.Data.Entities;
-using Microting.eForm.Infrastructure.Models;
-using Microting.eFormApi.BasePn.Infrastructure.Helpers;
-using OpenStack.NetCoreSwiftClient.Extensions;
 using Constants = Microting.eForm.Infrastructure.Constants.Constants;
-using OfficeOpenXml;
-using RabbitMQ.Client.Logging;
-using KeyValuePair = Microting.eForm.Dto.KeyValuePair;
 
 namespace ExcelReadManipPOC
 {
     public class Class1
     {
         private static Core _core;
-        
-        
+
+
         public static async Task Main()
         {
-            
+
             _core = new Core();
 
             var connection = _core
                 .StartSqlOnly(
-                    "host= localhost;Database=420_SDK;user = root;port=3306;Convert Zero Datetime = true;SslMode=none;")
+                    "host= localhost;Database=420_SDK;user = root; password=secretpassword;port=3306;Convert Zero Datetime = true;SslMode=none;")
                 .Result;
 
-            MicrotingDbContext dbContext = _core.dbContextHelper.GetDbContext();
+            MicrotingDbContext dbContext = _core.DbContextHelper.GetDbContext();
 
-            question_sets questionSets = new question_sets
+            QuestionSet questionSets = new QuestionSet
             {
                 Name = "Test-Set"
             };
-            if (dbContext.question_sets.Count(x => x.Name == questionSets.Name) != 1)
+            if (dbContext.QuestionSets.Count(x => x.Name == questionSets.Name) != 1)
             {
-               await questionSets.Create(dbContext);    
+               await questionSets.Create(dbContext);
             }
-            
-            languages language = new languages
+
+            Language language = new Language
             {
-                Description = "Description",
+                LanguageCode = "Description",
                 Name = "Danish"
             };
-            if (dbContext.languages.Count(x => x.Name == "da-DK") != 1)
+            if (dbContext.Languages.Count(x => x.Name == "da-DK") != 1)
             {
                 await language.Create(dbContext);
             }
 
-            languages dbLanguage = await dbContext.languages.FirstOrDefaultAsync(x => x.Name == language.Name);
+            Language dbLanguage = await dbContext.Languages.FirstOrDefaultAsync(x => x.Name == language.Name);
 
-            question_sets dbQuestionSets = await dbContext.question_sets.FirstOrDefaultAsync(x => x.Name == questionSets.Name);
+            QuestionSet dbQuestionSets = await dbContext.QuestionSets.FirstOrDefaultAsync(x => x.Name == questionSets.Name);
 
             string[] questionNames = new[] {"Q1", "Q2", "Q3", "Q4", "Q5", "Q6", "Q7", "Q8", "Q9", "Q10", "Q11", "Q12", "Q13"};
             //                                13    14    15    16    17    18    19    20    21    22    23    24
-            List<KeyValuePair<int, questions>> questionIds = new List<KeyValuePair<int, questions>>();
+            List<KeyValuePair<int, Question>> questionIds = new List<KeyValuePair<int, Question>>();
 
             int qi = 13;
             foreach (var questionName in questionNames)
             {
                 if (questionName != "Q13" && questionName != "Q1")
                 {
-                    var questionTranslation = 
+                    var questionTranslation =
                         dbContext.QuestionTranslations.SingleOrDefault(x => x.Name == questionName);
 
                     if (questionTranslation == null)
                     {
-                        questions question = new questions()
+                        Question question = new Question()
                         {
                             QuestionSetId = dbQuestionSets.Id,
                             QuestionType = Constants.QuestionTypes.Smiley2
                         };
                         await question.Create(dbContext);
 
-                        KeyValuePair<int, questions> kvp = new KeyValuePair<int, questions>(qi, question);
+                        KeyValuePair<int, Question> kvp = new KeyValuePair<int, Question>(qi, question);
                         questionIds.Add(kvp);
-                    
-                        questionTranslation = new question_translations()
+
+                        questionTranslation = new QuestionTranslation()
                         {
                             Name = questionName,
                             QuestionId = question.Id,
@@ -106,25 +91,25 @@ namespace ExcelReadManipPOC
                     }
                     else
                     {
-                        KeyValuePair<int, questions> kvp = new KeyValuePair<int, questions>(qi, questionTranslation.Question);
+                        KeyValuePair<int, Question> kvp = new KeyValuePair<int, Question>(qi, questionTranslation.Question);
                         questionIds.Add(kvp);
                     }
                 }
                 else
                 {
-                    var questionTranslation = 
+                    var questionTranslation =
                         dbContext.QuestionTranslations.SingleOrDefault(x => x.Name == questionName);
 
                     if (questionTranslation == null)
                     {
-                        questions question = new questions()
+                        Question question = new Question()
                         {
                             QuestionSetId = dbQuestionSets.Id,
                             QuestionType = questionName == "Q1" ? Constants.QuestionTypes.List : Constants.QuestionTypes.Multi
                         };
                         await question.Create(dbContext);
 
-                        questionTranslation = new question_translations()
+                        questionTranslation = new QuestionTranslation()
                         {
                             Name = questionName,
                             QuestionId = question.Id,
@@ -135,25 +120,25 @@ namespace ExcelReadManipPOC
                         string[] questionOptions;
                         if (questionName == "Q1")
                         {
-                            questionOptions = new[] {"Ja", "Nej"};    
+                            questionOptions = new[] {"Ja", "Nej"};
                         }
                         else
                         {
                             questionOptions = new[] {"1", "2", "3", "4", "5"};
                         }
-                        
+
 
                         foreach (string questionOption in questionOptions)
                         {
-                            options option = new options()
+                            Option option = new Option()
                             {
                                 QuestionId = question.Id,
                                 Weight = 1,
                                 WeightValue = 1
                             };
                             await option.Create(dbContext);
-                            
-                            option_translations optionTranslation = new option_translations()
+
+                            OptionTranslation optionTranslation = new OptionTranslation()
                             {
                                 OptionId = option.Id,
                                 Name = questionOption,
@@ -162,37 +147,37 @@ namespace ExcelReadManipPOC
 
                             await optionTranslation.Create(dbContext);
                         }
-                        
-                        KeyValuePair<int, questions> kvp = new KeyValuePair<int, questions>(qi, question);
+
+                        KeyValuePair<int, Question> kvp = new KeyValuePair<int, Question>(qi, question);
                         questionIds.Add(kvp);
                     }
                     else
                     {
-                        KeyValuePair<int, questions> kvp = new KeyValuePair<int, questions>(qi, questionTranslation.Question);
+                        KeyValuePair<int, Question> kvp = new KeyValuePair<int, Question>(qi, questionTranslation.Question);
                         questionIds.Add(kvp);
                     }
                 }
                 qi++;
             }
-            
+
             // Q13 with options
-            
+
             // KeyValuePair<int, questions> kvp = new KeyValuePair<int, questions>(qi, questionTranslation.Question);
             // questionIds.Add(kvp);
 
-            survey_configurations surveyConfiguration = new survey_configurations
+            SurveyConfiguration surveyConfiguration = new SurveyConfiguration
             {
                 QuestionSetId = dbQuestionSets.Id,
                 Name = "Configuartion 1"
             };
-            if (dbContext.survey_configurations.Count(x => x.Name == surveyConfiguration.Name) != 1)
+            if (dbContext.SurveyConfigurations.Count(x => x.Name == surveyConfiguration.Name) != 1)
             {
                 await surveyConfiguration.Create(dbContext);
             }
 
-            survey_configurations dbSurveyConfiguration =
-                await dbContext.survey_configurations.FirstOrDefaultAsync(x => x.Name == surveyConfiguration.Name);
-            
+            SurveyConfiguration dbSurveyConfiguration =
+                await dbContext.SurveyConfigurations.FirstOrDefaultAsync(x => x.Name == surveyConfiguration.Name);
+
             // dbContext.question_sets questionSets = new question_sets();
             Random rnd = new Random();
             var document = @"/home/microting/Documents/workspace/microting/ExcelReadManipPOC/Test-data.xlsx";
@@ -214,10 +199,8 @@ namespace ExcelReadManipPOC
                     WorksheetPart worksheetPart = GetWorksheetFromSheetName(workbookPart, "Senge_voksen");
 
                     var sheet1 = worksheetPart.Worksheet;
-                    
-                    
+
                     // Console.WriteLine(sheet1);
-                
 
                     var cells = sheet1.Descendants<Cell>();
                     var rows = sheet1.Descendants<Row>();
@@ -230,9 +213,9 @@ namespace ExcelReadManipPOC
                     int i = 0;
                     var stringTable = workbookPart.GetPartsOfType<SharedStringTablePart>()
                         .FirstOrDefault();
-                    List<KeyValuePair<string, sites>> localSites = new List<KeyValuePair<string, sites>>();
-                    List<KeyValuePair<string, units>> localUnits = new List<KeyValuePair<string, units>>();
-                    var languageId = dbContext.languages.SingleOrDefault(x => x.Name == "da-DK");
+                    List<KeyValuePair<string, Site>> localSites = new List<KeyValuePair<string, Site>>();
+                    List<KeyValuePair<string, Unit>> localUnits = new List<KeyValuePair<string, Unit>>();
+                    var languageId = dbContext.Languages.SingleOrDefault(x => x.Name == "da-DK");
                     // List<sites> localSites = new List<sites>();
                     // List<units> localUnits = new List<units>();
                     foreach (var row in rows1)
@@ -242,7 +225,7 @@ namespace ExcelReadManipPOC
                             var cells1 = row.Elements<Cell>();
 
                             int cellNumber = 0;
-                            answers answer = null;
+                            Answer answer = null;
                             List<Cell> theCells = cells1.ToList();
                             var microtingUid = int.Parse(theCells[0].CellValue.Text);
                             var duration = int.Parse(theCells[1].CellValue.Text);
@@ -250,42 +233,42 @@ namespace ExcelReadManipPOC
                                 int.Parse(theCells[2].CellValue.Text)).InnerText;
                             var time = stringTable.SharedStringTable.ElementAt(
                                 int.Parse(theCells[7].CellValue.Text)).InnerText;
-                            
+
                             DateTime dateOfDoing = DateTime.ParseExact($"{date} {time}","dd-MM-yyyy HH:mm:ss", null );
-                            
+
                             var location = stringTable.SharedStringTable.ElementAt(
                                 int.Parse(theCells[9].CellValue.Text)).InnerText;
 
                             int? sdkSiteId = null;
                             int? sdkUnitId = null;
-                            
+
                             if (localSites.Any(x => x.Key == location))
                             {
                                 sdkSiteId = localSites.First(x => x.Key == location).Value.Id;
                             }
                             else
                             {
-                                var lookupSite = dbContext.sites.SingleOrDefault(x => x.Name == location);
+                                var lookupSite = dbContext.Sites.SingleOrDefault(x => x.Name == location);
                                 if (lookupSite != null)
                                 {
-                                    KeyValuePair<string, sites> pair = new KeyValuePair<string, sites>(location, lookupSite);
+                                    KeyValuePair<string, Site> pair = new KeyValuePair<string, Site>(location, lookupSite);
                                     localSites.Add(pair);
                                     sdkSiteId = lookupSite.Id;
                                 }
                                 else
                                 {
-                                    sites site = new sites()
+                                    Site site = new Site
                                     {
                                         Name = location,
                                         MicrotingUid = rnd.Next(1, 999999)
                                     };
                                     await site.Create(dbContext);
-                                    KeyValuePair<string, sites> pair = new KeyValuePair<string, sites>(location, site);
+                                    KeyValuePair<string, Site> pair = new KeyValuePair<string, Site>(location, site);
                                     localSites.Add(pair);
                                     sdkSiteId = site.Id;
-                                }    
+                                }
                             }
-                            
+
                             var unitString = theCells[11].CellValue.Text;
                             if (localUnits.Any(x => x.Key == unitString))
                             {
@@ -293,35 +276,33 @@ namespace ExcelReadManipPOC
                             }
                             else
                             {
-                                var lookupUnit = dbContext.units.SingleOrDefault(x => x.MicrotingUid.ToString() == unitString);
-                            
+                                var lookupUnit = dbContext.Units.SingleOrDefault(x => x.MicrotingUid.ToString() == unitString);
+
                                 if (lookupUnit != null)
                                 {
-                                    KeyValuePair<string, units> pair = new KeyValuePair<string, units>(unitString, lookupUnit);
+                                    KeyValuePair<string, Unit> pair = new KeyValuePair<string, Unit>(unitString, lookupUnit);
                                     localUnits.Add(pair);
                                     sdkUnitId = lookupUnit.Id;
                                 }
                                 else
                                 {
-                                    units unit = new units()
+                                    Unit unit = new Unit
                                     {
                                         MicrotingUid = int.Parse(unitString),
                                         SiteId = sdkSiteId
                                     };
                                     await unit.Create(dbContext);
-                                    KeyValuePair<string, units> pair = new KeyValuePair<string, units>(unitString, unit);
+                                    KeyValuePair<string, Unit> pair = new KeyValuePair<string, Unit>(unitString, unit);
                                     localUnits.Add(pair);
                                     sdkUnitId = unit.Id;
                                 }
                             }
 
-
-
-                            answer = dbContext.answers.SingleOrDefault(x =>
+                            answer = dbContext.Answers.SingleOrDefault(x =>
                                 x.MicrotingUid == microtingUid);
                             if (answer == null)
                             {
-                                answer = new answers()
+                                answer = new Answer
                                 {
                                     AnswerDuration = duration,
                                     UnitId = (int)sdkUnitId,
@@ -331,10 +312,10 @@ namespace ExcelReadManipPOC
                                     LanguageId = dbLanguage.Id,
                                     QuestionSetId = dbQuestionSets.Id,
                                     SurveyConfigurationId = dbSurveyConfiguration.Id
-                                };   
+                                };
                                 await answer.Create(dbContext);
                             }
-                            
+
                             foreach (var cell in cells1)
                             {
                                 if (cell == null)
@@ -363,7 +344,7 @@ namespace ExcelReadManipPOC
                                             {
                                                 //         if (questionLookupId != 25)
                                                 //         {
-                                                foreach (options option in questionIds
+                                                foreach (Option option in questionIds
                                                     .First(x => x.Key == questionLookupId).Value.Options)
                                                 {
                                                     text = stringTable.SharedStringTable.ElementAt(
@@ -386,7 +367,7 @@ namespace ExcelReadManipPOC
                                                 {
                                                     lookupOptionId = questionIds
                                                         .First(x => x.Key == questionLookupId).Value.Options
-                                                        .SingleOrDefault(x => x.WeightValue == int.Parse(cell.CellValue.Text)).Id;    
+                                                        .SingleOrDefault(x => x.WeightValue == int.Parse(cell.CellValue.Text)).Id;
                                                 }
                                             }
                                             else
@@ -440,28 +421,28 @@ namespace ExcelReadManipPOC
                                         //         .SingleOrDefault(x => x.WeightValue == int.Parse(cell.CellValue.Text)).Id;
                                         // }
                                         //
-                                        answer_values answerValue = null;
+                                        AnswerValue answerValue = null;
                                         if (lookupOptionId != null)
                                         {
-                                            answerValue = dbContext.answer_values
-                                                .SingleOrDefault(x 
-                                                    => x.AnswerId == answer.Id 
-                                                       && x.QuestionId == questionIds.First(y 
-                                                           => y.Key == questionLookupId).Value.Id 
+                                            answerValue = dbContext.AnswerValues
+                                                .SingleOrDefault(x
+                                                    => x.AnswerId == answer.Id
+                                                       && x.QuestionId == questionIds.First(y
+                                                           => y.Key == questionLookupId).Value.Id
                                                        && x.OptionId == lookupOptionId);
                                         }
                                         else
                                         {
-                                            answerValue = dbContext.answer_values
-                                                .SingleOrDefault(x 
-                                                    => x.AnswerId == answer.Id 
-                                                       && x.QuestionId == questionIds.First(y 
+                                            answerValue = dbContext.AnswerValues
+                                                .SingleOrDefault(x
+                                                    => x.AnswerId == answer.Id
+                                                       && x.QuestionId == questionIds.First(y
                                                            => y.Key == questionLookupId).Value.Id);
                                         }
-                                            
+
                                         if (answerValue == null)
                                         {
-                                            answerValue = new answer_values()
+                                            answerValue = new AnswerValue
                                             {
                                                 AnswerId = answer.Id,
                                                 QuestionId = questionIds.First(x => x.Key == questionLookupId).Value.Id
@@ -477,7 +458,7 @@ namespace ExcelReadManipPOC
                                                             int.Parse(cell.CellValue.Text)).InnerText;
                                                         // Console.WriteLine(text + " ");
                                                         int optionId = 0;
-                                                        foreach (options option in questionIds
+                                                        foreach (Option option in questionIds
                                                             .First(x => x.Key == questionLookupId).Value.Options)
                                                         {
                                                             var r =  option.OptionTranslationses.SingleOrDefault(x => x.Name == text);
@@ -491,9 +472,9 @@ namespace ExcelReadManipPOC
                                                         answerValue.QuestionId = questionIds
                                                             .First(x => x.Key == questionLookupId).Value.Id;
                                                         await answerValue.Create(dbContext);
-                                                    }    
+                                                    }
                                                 }
-                                                
+
                                             }
                                             else
                                             {
@@ -502,7 +483,7 @@ namespace ExcelReadManipPOC
                                                     if (cell.CellValue != null)
                                                     {
                                                         text = cell.CellValue.Text;
-                                                    
+
                                                         answerValue.Value = text;
                                                         answerValue.QuestionId = questionIds
                                                             .First(x => x.Key == questionLookupId).Value.Id;
@@ -545,9 +526,9 @@ namespace ExcelReadManipPOC
                                                                         .First(x => x.Key == questionLookupId).Value.Options.ToList()[4].Id;
                                                                     break;
                                                             }
-                                                            
+
                                                             await answerValue.Create(dbContext);
-                                                        }   
+                                                        }
                                                     }
                                                 }
                                             }
@@ -649,123 +630,119 @@ namespace ExcelReadManipPOC
             int optionq13_3Id = 71;
             int optionq13_4Id = 72;
             int optionq13_5Id = 73;
-            Debug.Assert(dbContext.answer_values.Count(x => x.OptionId == optionJaId) == 419);
-            Debug.Assert(dbContext.answer_values.Count(x => x.OptionId == optionNejId) == 133);
-            Debug.Assert(dbContext.answer_values.Count(x => x.QuestionId == q1Id) == 552);
-            
-            Debug.Assert(dbContext.answer_values.Count(x => x.OptionId == option0q2Id) == 5);
-            Debug.Assert(dbContext.answer_values.Count(x => x.OptionId == option25q2Id) == 7);
-            Debug.Assert(dbContext.answer_values.Count(x => x.OptionId == option50q2Id) == 14);
-            Debug.Assert(dbContext.answer_values.Count(x => x.OptionId == option75q2Id) == 112);
-            Debug.Assert(dbContext.answer_values.Count(x => x.OptionId == option100q2Id) == 275);
-            Debug.Assert(dbContext.answer_values.Count(x => x.OptionId == option999q2Id) == 6);
-            Debug.Assert(dbContext.answer_values.Count(x => x.QuestionId == q2Id) == 419);
-            
-            Debug.Assert(dbContext.answer_values.Count(x => x.OptionId == option0q3Id) == 15);
-            Debug.Assert(dbContext.answer_values.Count(x => x.OptionId == option25q3Id) == 8);
-            Debug.Assert(dbContext.answer_values.Count(x => x.OptionId == option50q3Id) == 44);
-            Debug.Assert(dbContext.answer_values.Count(x => x.OptionId == option75q3Id) == 144);
-            Debug.Assert(dbContext.answer_values.Count(x => x.OptionId == option100q3Id) == 201);
-            Debug.Assert(dbContext.answer_values.Count(x => x.OptionId == option999q3Id) == 7);
-            Debug.Assert(dbContext.answer_values.Count(x => x.QuestionId == q3Id) == 419);
-            
-            Debug.Assert(dbContext.answer_values.Count(x => x.OptionId == option0q4Id) == 13);
-            Debug.Assert(dbContext.answer_values.Count(x => x.OptionId == option25q4Id) == 17);
-            Debug.Assert(dbContext.answer_values.Count(x => x.OptionId == option50q4Id) == 78);
-            Debug.Assert(dbContext.answer_values.Count(x => x.OptionId == option75q4Id) == 123);
-            Debug.Assert(dbContext.answer_values.Count(x => x.OptionId == option100q4Id) == 176);
-            Debug.Assert(dbContext.answer_values.Count(x => x.OptionId == option999q4Id) == 12);
-            Debug.Assert(dbContext.answer_values.Count(x => x.QuestionId == q4Id) == 419);
-            
-            Debug.Assert(dbContext.answer_values.Count(x => x.OptionId == option0q5Id) == 16);
-            Debug.Assert(dbContext.answer_values.Count(x => x.OptionId == option25q5Id) == 18);
-            Debug.Assert(dbContext.answer_values.Count(x => x.OptionId == option50q5Id) == 49);
-            Debug.Assert(dbContext.answer_values.Count(x => x.OptionId == option75q5Id) == 135);
-            Debug.Assert(dbContext.answer_values.Count(x => x.OptionId == option100q5Id) == 188);
-            Debug.Assert(dbContext.answer_values.Count(x => x.OptionId == option999q5Id) == 13);
-            Debug.Assert(dbContext.answer_values.Count(x => x.QuestionId == q5Id) == 419);
-            
-            Debug.Assert(dbContext.answer_values.Count(x => x.OptionId == option0q6Id) == 21);
-            Debug.Assert(dbContext.answer_values.Count(x => x.OptionId == option25q6Id) == 23);
-            Debug.Assert(dbContext.answer_values.Count(x => x.OptionId == option50q6Id) == 61);
-            Debug.Assert(dbContext.answer_values.Count(x => x.OptionId == option75q6Id) == 131);
-            Debug.Assert(dbContext.answer_values.Count(x => x.OptionId == option100q6Id) == 160);
-            Debug.Assert(dbContext.answer_values.Count(x => x.OptionId == option999q6Id) == 23);
-            Debug.Assert(dbContext.answer_values.Count(x => x.QuestionId == q6Id) == 419);
-            
-            Debug.Assert(dbContext.answer_values.Count(x => x.OptionId == option0q7Id) == 13);
-            Debug.Assert(dbContext.answer_values.Count(x => x.OptionId == option25q7Id) == 8);
-            Debug.Assert(dbContext.answer_values.Count(x => x.OptionId == option50q7Id) == 57);
-            Debug.Assert(dbContext.answer_values.Count(x => x.OptionId == option75q7Id) == 116);
-            Debug.Assert(dbContext.answer_values.Count(x => x.OptionId == option100q7Id) == 216);
-            Debug.Assert(dbContext.answer_values.Count(x => x.OptionId == option999q7Id) == 9);
-            Debug.Assert(dbContext.answer_values.Count(x => x.QuestionId == q7Id) == 419);
-            
-            Debug.Assert(dbContext.answer_values.Count(x => x.OptionId == option0q8Id) == 35);
-            Debug.Assert(dbContext.answer_values.Count(x => x.OptionId == option25q8Id) == 27);
-            Debug.Assert(dbContext.answer_values.Count(x => x.OptionId == option50q8Id) == 98);
-            Debug.Assert(dbContext.answer_values.Count(x => x.OptionId == option75q8Id) == 108);
-            Debug.Assert(dbContext.answer_values.Count(x => x.OptionId == option100q8Id) == 124);
-            Debug.Assert(dbContext.answer_values.Count(x => x.OptionId == option999q8Id) == 27);
-            Debug.Assert(dbContext.answer_values.Count(x => x.QuestionId == q8Id) == 419);
-            
-            Debug.Assert(dbContext.answer_values.Count(x => x.OptionId == option0q9Id) == 19);
-            Debug.Assert(dbContext.answer_values.Count(x => x.OptionId == option25q9Id) == 23);
-            Debug.Assert(dbContext.answer_values.Count(x => x.OptionId == option50q9Id) == 51);
-            Debug.Assert(dbContext.answer_values.Count(x => x.OptionId == option75q9Id) == 107);
-            Debug.Assert(dbContext.answer_values.Count(x => x.OptionId == option100q9Id) == 213);
-            Debug.Assert(dbContext.answer_values.Count(x => x.OptionId == option999q9Id) == 6);
-            Debug.Assert(dbContext.answer_values.Count(x => x.QuestionId == q9Id) == 419);
-            
-            Debug.Assert(dbContext.answer_values.Count(x => x.OptionId == option0q10Id) == 16);
-            Debug.Assert(dbContext.answer_values.Count(x => x.OptionId == option25q10Id) == 10);
-            Debug.Assert(dbContext.answer_values.Count(x => x.OptionId == option50q10Id) == 66);
-            Debug.Assert(dbContext.answer_values.Count(x => x.OptionId == option75q10Id) == 116);
-            Debug.Assert(dbContext.answer_values.Count(x => x.OptionId == option100q10Id) == 186);
-            Debug.Assert(dbContext.answer_values.Count(x => x.OptionId == option999q10Id) == 25);
-            Debug.Assert(dbContext.answer_values.Count(x => x.QuestionId == q10Id) == 419);
-            
-            Debug.Assert(dbContext.answer_values.Count(x => x.OptionId == option0q11Id) == 11);
-            Debug.Assert(dbContext.answer_values.Count(x => x.OptionId == option25q11Id) == 8);
-            Debug.Assert(dbContext.answer_values.Count(x => x.OptionId == option50q11Id) == 41);
-            Debug.Assert(dbContext.answer_values.Count(x => x.OptionId == option75q11Id) == 111);
-            Debug.Assert(dbContext.answer_values.Count(x => x.OptionId == option100q11Id) == 211);
-            Debug.Assert(dbContext.answer_values.Count(x => x.OptionId == option999q11Id) == 37);
-            Debug.Assert(dbContext.answer_values.Count(x => x.QuestionId == q11Id) == 419);
-            
-            Debug.Assert(dbContext.answer_values.Count(x => x.OptionId == option0q12Id) == 12);
-            Debug.Assert(dbContext.answer_values.Count(x => x.OptionId == option25q12Id) == 9);
-            Debug.Assert(dbContext.answer_values.Count(x => x.OptionId == option50q12Id) == 58);
-            Debug.Assert(dbContext.answer_values.Count(x => x.OptionId == option75q12Id) == 126);
-            Debug.Assert(dbContext.answer_values.Count(x => x.OptionId == option100q12Id) == 187);
-            Debug.Assert(dbContext.answer_values.Count(x => x.OptionId == option999q12Id) == 27);
-            Debug.Assert(dbContext.answer_values.Count(x => x.QuestionId == q12Id) == 419);
-            
-            Debug.Assert(dbContext.answer_values.Count(x => x.OptionId == optionq13_1Id) == 289);
-            Debug.Assert(dbContext.answer_values.Count(x => x.QuestionId == q13Id) == 1383);
-            Debug.Assert(dbContext.answer_values.Count(x => x.OptionId == optionq13_2Id) == 273);
-            Debug.Assert(dbContext.answer_values.Count(x => x.QuestionId == q13Id) == 1383);
-            Debug.Assert(dbContext.answer_values.Count(x => x.OptionId == optionq13_3Id) == 281);
-            Debug.Assert(dbContext.answer_values.Count(x => x.QuestionId == q13Id) == 1383);
-            Debug.Assert(dbContext.answer_values.Count(x => x.OptionId == optionq13_4Id) == 271);
-            Debug.Assert(dbContext.answer_values.Count(x => x.QuestionId == q13Id) == 1383);
-            Debug.Assert(dbContext.answer_values.Count(x => x.OptionId == optionq13_5Id) == 269);
-            Debug.Assert(dbContext.answer_values.Count(x => x.QuestionId == q13Id) == 1383);
+            Debug.Assert(dbContext.AnswerValues.Count(x => x.OptionId == optionJaId) == 419);
+            Debug.Assert(dbContext.AnswerValues.Count(x => x.OptionId == optionNejId) == 133);
+            Debug.Assert(dbContext.AnswerValues.Count(x => x.QuestionId == q1Id) == 552);
+
+            Debug.Assert(dbContext.AnswerValues.Count(x => x.OptionId == option0q2Id) == 5);
+            Debug.Assert(dbContext.AnswerValues.Count(x => x.OptionId == option25q2Id) == 7);
+            Debug.Assert(dbContext.AnswerValues.Count(x => x.OptionId == option50q2Id) == 14);
+            Debug.Assert(dbContext.AnswerValues.Count(x => x.OptionId == option75q2Id) == 112);
+            Debug.Assert(dbContext.AnswerValues.Count(x => x.OptionId == option100q2Id) == 275);
+            Debug.Assert(dbContext.AnswerValues.Count(x => x.OptionId == option999q2Id) == 6);
+            Debug.Assert(dbContext.AnswerValues.Count(x => x.QuestionId == q2Id) == 419);
+
+            Debug.Assert(dbContext.AnswerValues.Count(x => x.OptionId == option0q3Id) == 15);
+            Debug.Assert(dbContext.AnswerValues.Count(x => x.OptionId == option25q3Id) == 8);
+            Debug.Assert(dbContext.AnswerValues.Count(x => x.OptionId == option50q3Id) == 44);
+            Debug.Assert(dbContext.AnswerValues.Count(x => x.OptionId == option75q3Id) == 144);
+            Debug.Assert(dbContext.AnswerValues.Count(x => x.OptionId == option100q3Id) == 201);
+            Debug.Assert(dbContext.AnswerValues.Count(x => x.OptionId == option999q3Id) == 7);
+            Debug.Assert(dbContext.AnswerValues.Count(x => x.QuestionId == q3Id) == 419);
+
+            Debug.Assert(dbContext.AnswerValues.Count(x => x.OptionId == option0q4Id) == 13);
+            Debug.Assert(dbContext.AnswerValues.Count(x => x.OptionId == option25q4Id) == 17);
+            Debug.Assert(dbContext.AnswerValues.Count(x => x.OptionId == option50q4Id) == 78);
+            Debug.Assert(dbContext.AnswerValues.Count(x => x.OptionId == option75q4Id) == 123);
+            Debug.Assert(dbContext.AnswerValues.Count(x => x.OptionId == option100q4Id) == 176);
+            Debug.Assert(dbContext.AnswerValues.Count(x => x.OptionId == option999q4Id) == 12);
+            Debug.Assert(dbContext.AnswerValues.Count(x => x.QuestionId == q4Id) == 419);
+
+            Debug.Assert(dbContext.AnswerValues.Count(x => x.OptionId == option0q5Id) == 16);
+            Debug.Assert(dbContext.AnswerValues.Count(x => x.OptionId == option25q5Id) == 18);
+            Debug.Assert(dbContext.AnswerValues.Count(x => x.OptionId == option50q5Id) == 49);
+            Debug.Assert(dbContext.AnswerValues.Count(x => x.OptionId == option75q5Id) == 135);
+            Debug.Assert(dbContext.AnswerValues.Count(x => x.OptionId == option100q5Id) == 188);
+            Debug.Assert(dbContext.AnswerValues.Count(x => x.OptionId == option999q5Id) == 13);
+            Debug.Assert(dbContext.AnswerValues.Count(x => x.QuestionId == q5Id) == 419);
+
+            Debug.Assert(dbContext.AnswerValues.Count(x => x.OptionId == option0q6Id) == 21);
+            Debug.Assert(dbContext.AnswerValues.Count(x => x.OptionId == option25q6Id) == 23);
+            Debug.Assert(dbContext.AnswerValues.Count(x => x.OptionId == option50q6Id) == 61);
+            Debug.Assert(dbContext.AnswerValues.Count(x => x.OptionId == option75q6Id) == 131);
+            Debug.Assert(dbContext.AnswerValues.Count(x => x.OptionId == option100q6Id) == 160);
+            Debug.Assert(dbContext.AnswerValues.Count(x => x.OptionId == option999q6Id) == 23);
+            Debug.Assert(dbContext.AnswerValues.Count(x => x.QuestionId == q6Id) == 419);
+
+            Debug.Assert(dbContext.AnswerValues.Count(x => x.OptionId == option0q7Id) == 13);
+            Debug.Assert(dbContext.AnswerValues.Count(x => x.OptionId == option25q7Id) == 8);
+            Debug.Assert(dbContext.AnswerValues.Count(x => x.OptionId == option50q7Id) == 57);
+            Debug.Assert(dbContext.AnswerValues.Count(x => x.OptionId == option75q7Id) == 116);
+            Debug.Assert(dbContext.AnswerValues.Count(x => x.OptionId == option100q7Id) == 216);
+            Debug.Assert(dbContext.AnswerValues.Count(x => x.OptionId == option999q7Id) == 9);
+            Debug.Assert(dbContext.AnswerValues.Count(x => x.QuestionId == q7Id) == 419);
+
+            Debug.Assert(dbContext.AnswerValues.Count(x => x.OptionId == option0q8Id) == 35);
+            Debug.Assert(dbContext.AnswerValues.Count(x => x.OptionId == option25q8Id) == 27);
+            Debug.Assert(dbContext.AnswerValues.Count(x => x.OptionId == option50q8Id) == 98);
+            Debug.Assert(dbContext.AnswerValues.Count(x => x.OptionId == option75q8Id) == 108);
+            Debug.Assert(dbContext.AnswerValues.Count(x => x.OptionId == option100q8Id) == 124);
+            Debug.Assert(dbContext.AnswerValues.Count(x => x.OptionId == option999q8Id) == 27);
+            Debug.Assert(dbContext.AnswerValues.Count(x => x.QuestionId == q8Id) == 419);
+
+            Debug.Assert(dbContext.AnswerValues.Count(x => x.OptionId == option0q9Id) == 19);
+            Debug.Assert(dbContext.AnswerValues.Count(x => x.OptionId == option25q9Id) == 23);
+            Debug.Assert(dbContext.AnswerValues.Count(x => x.OptionId == option50q9Id) == 51);
+            Debug.Assert(dbContext.AnswerValues.Count(x => x.OptionId == option75q9Id) == 107);
+            Debug.Assert(dbContext.AnswerValues.Count(x => x.OptionId == option100q9Id) == 213);
+            Debug.Assert(dbContext.AnswerValues.Count(x => x.OptionId == option999q9Id) == 6);
+            Debug.Assert(dbContext.AnswerValues.Count(x => x.QuestionId == q9Id) == 419);
+
+            Debug.Assert(dbContext.AnswerValues.Count(x => x.OptionId == option0q10Id) == 16);
+            Debug.Assert(dbContext.AnswerValues.Count(x => x.OptionId == option25q10Id) == 10);
+            Debug.Assert(dbContext.AnswerValues.Count(x => x.OptionId == option50q10Id) == 66);
+            Debug.Assert(dbContext.AnswerValues.Count(x => x.OptionId == option75q10Id) == 116);
+            Debug.Assert(dbContext.AnswerValues.Count(x => x.OptionId == option100q10Id) == 186);
+            Debug.Assert(dbContext.AnswerValues.Count(x => x.OptionId == option999q10Id) == 25);
+            Debug.Assert(dbContext.AnswerValues.Count(x => x.QuestionId == q10Id) == 419);
+
+            Debug.Assert(dbContext.AnswerValues.Count(x => x.OptionId == option0q11Id) == 11);
+            Debug.Assert(dbContext.AnswerValues.Count(x => x.OptionId == option25q11Id) == 8);
+            Debug.Assert(dbContext.AnswerValues.Count(x => x.OptionId == option50q11Id) == 41);
+            Debug.Assert(dbContext.AnswerValues.Count(x => x.OptionId == option75q11Id) == 111);
+            Debug.Assert(dbContext.AnswerValues.Count(x => x.OptionId == option100q11Id) == 211);
+            Debug.Assert(dbContext.AnswerValues.Count(x => x.OptionId == option999q11Id) == 37);
+            Debug.Assert(dbContext.AnswerValues.Count(x => x.QuestionId == q11Id) == 419);
+
+            Debug.Assert(dbContext.AnswerValues.Count(x => x.OptionId == option0q12Id) == 12);
+            Debug.Assert(dbContext.AnswerValues.Count(x => x.OptionId == option25q12Id) == 9);
+            Debug.Assert(dbContext.AnswerValues.Count(x => x.OptionId == option50q12Id) == 58);
+            Debug.Assert(dbContext.AnswerValues.Count(x => x.OptionId == option75q12Id) == 126);
+            Debug.Assert(dbContext.AnswerValues.Count(x => x.OptionId == option100q12Id) == 187);
+            Debug.Assert(dbContext.AnswerValues.Count(x => x.OptionId == option999q12Id) == 27);
+            Debug.Assert(dbContext.AnswerValues.Count(x => x.QuestionId == q12Id) == 419);
+
+            Debug.Assert(dbContext.AnswerValues.Count(x => x.OptionId == optionq13_1Id) == 289);
+            Debug.Assert(dbContext.AnswerValues.Count(x => x.QuestionId == q13Id) == 1383);
+            Debug.Assert(dbContext.AnswerValues.Count(x => x.OptionId == optionq13_2Id) == 273);
+            Debug.Assert(dbContext.AnswerValues.Count(x => x.QuestionId == q13Id) == 1383);
+            Debug.Assert(dbContext.AnswerValues.Count(x => x.OptionId == optionq13_3Id) == 281);
+            Debug.Assert(dbContext.AnswerValues.Count(x => x.QuestionId == q13Id) == 1383);
+            Debug.Assert(dbContext.AnswerValues.Count(x => x.OptionId == optionq13_4Id) == 271);
+            Debug.Assert(dbContext.AnswerValues.Count(x => x.QuestionId == q13Id) == 1383);
+            Debug.Assert(dbContext.AnswerValues.Count(x => x.OptionId == optionq13_5Id) == 269);
+            Debug.Assert(dbContext.AnswerValues.Count(x => x.QuestionId == q13Id) == 1383);
             Console.WriteLine("we are done");
         }
         private static WorksheetPart GetWorksheetFromSheetName(WorkbookPart workbookPart, string sheetName)
-        {     
+        {
             Sheet sheet = workbookPart.Workbook.Descendants<Sheet>().FirstOrDefault(s => s.Name == sheetName);
             if (sheet == null)
             {
                 throw new Exception(string.Format("Could not find sheet with name {0}", sheetName));
             }
-            else
-            {
-                return workbookPart.GetPartById(sheet.Id) as WorksheetPart;
-            }
+
+            return workbookPart.GetPartById(sheet.Id) as WorksheetPart;
         }
-        
-        
     }
 }
